@@ -1,156 +1,207 @@
-# pro1 — Bank Statement PDF Parser
+# Multi-Bank Statement PDF Parser
 
-A consolidated Python parser that automatically detects bank statement formats and extracts transactions from PDF files.
+A robust Python parser for extracting transactions from bank statement PDFs with automatic bank detection and multiple parsing strategies.
 
-## Features
+## 🎯 Features
 
-- **Multi-bank support**: Axis Bank, YesBank, J&K Bank, HDFC, Kotak, and standard table-based formats
-- **Auto-detection**: Intelligently identifies bank type from PDF content
-- **Fallback parsing**: Uses multiple strategies (table extraction, regex) for robust parsing
-- **JSON output**: Exports parsed transactions in structured JSON format
-- **Command-line interface**: Simple CLI with optional mode override
+- **🏦 Multi-bank Support**: Detects and parses statements from 6+ banks automatically
+- **🔍 Smart Detection**: Analyzes PDF content to identify bank type
+- **📊 Multiple Strategies**: Combines table extraction, regex, and text-based parsing
+- **📁 Fallback Parsing**: Gracefully handles edge cases with fallback parsers
+- **📋 Clean JSON Output**: Structured transaction data ready for integration
+- **⚙️ CLI Interface**: Simple command-line usage with optional mode override
 
-## Supported Banks
+## 🏦 Supported Banks
 
-- **AXIS**: Table and text-based parser
-- **YESBANK**: Table and text-based parser
-- **JK**: J&K Bank (regex-based parsing)
-- **HDFC**: Via original `sample.py` module
-- **KOTAK**: Kotak Mahindra Bank (via original `sample.py`)
-- **STANDARD**: SBI and other banks (simple table extraction with fallback regex)
+| Bank | Method | Detection |
+|------|--------|-----------|
+| **Axis Bank** | Table + Text | Keyword matching |
+| **YesBank** | Table + Text | Keyword matching |
+| **J&K Bank** | Regex-based | "Jammu" + "Kashmir" |
+| **HDFC** | Coordinate-based | "HDFC Bank" keyword |
+| **Kotak Mahindra** | Table-based | "Cust. Reln. No." |
+| **SBI/Standard** | Table + Regex | Fallback parser |
 
-## Installation
+## 📦 Installation
 
 ### Prerequisites
-- Python 3.7+
-- virtualenv
+- Python 3.7 or higher
+- pip (Python package manager)
 
 ### Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/Jils22/multi_bank_extraction_parser.git
+cd multi_bank_extraction_parser
+
 # Create virtual environment
 python -m venv .venv
 
-# Activate (Windows)
+# Activate environment
+# Windows:
 .\.venv\Scripts\activate
-
-# Activate (macOS/Linux)
+# macOS/Linux:
 source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-## Usage
+## 🚀 Quick Start
 
-### Basic Usage (Auto-detect)
-
-```bash
-python main_parser.py <pdf_path> <output_json>
-```
-
-Example:
-```bash
-python main_parser.py "unparsed_pdfs/statement.pdf" "outputs/statement.json"
-```
-
-### Specify Parser Mode
+### Auto-detect Bank Type (Recommended)
 
 ```bash
-python main_parser.py <pdf_path> <output_json> --mode <mode>
+python main_parser.py "path/to/statement.pdf" "output/transactions.json"
 ```
 
-Available modes:
-- `auto` (default): Auto-detect bank type
-- `standard`: SBI/generic table parser
-- `AXIS`: Force Axis Bank parser
-- `YESBANK`: Force YesBank parser
-- `JK`: Force J&K Bank parser
-- `HDFC`: Force HDFC Bank parser
-- `KOTAK`: Force Kotak Bank parser
+### Specify Bank Type
 
-Examples:
 ```bash
 python main_parser.py "statement.pdf" "output.json" --mode AXIS
-python main_parser.py "statement.pdf" "output.json" --mode standard
+python main_parser.py "statement.pdf" "output.json" --mode KOTAK
 ```
 
-## Project Structure
+### Available Modes
 
 ```
-pro1/
-├── main_parser.py           # Main consolidated parser (all logic)
-├── requirements.txt         # Python dependencies
-├── .gitignore              # Git ignore rules
-├── README.md               # This file
-├── archive_move.ps1        # PowerShell script to archive legacy files
-├── archive/                # Legacy/archived parser scripts
-│   ├── parse_one.py
-│   ├── parse_one_enhanced.py
-│   ├── parse_one_standard.py
-│   ├── parse_remaining_*.py
-│   ├── final_recovery.py
-│   └── sample_enhanced.py
-├── parsable_pdfs/          # Sample input PDFs (handled by .gitignore)
-│   └── outputs/
-├── unparsed_pdfs/          # Additional input PDFs (handled by .gitignore)
-└── .venv/                  # Virtual environment (gitignored)
+auto          Auto-detect bank (default)
+standard      SBI/generic table parser
+AXIS          Force Axis Bank parser
+YESBANK       Force YesBank parser
+JK            Force J&K Bank parser
+HDFC          Force HDFC Bank parser
+KOTAK         Force Kotak Bank parser
 ```
 
-## Output Format
+## 📊 Output Format
 
-The parser generates a JSON file with transaction arrays:
+The parser generates a JSON array of transactions:
 
 ```json
 [
   {
     "Date": "01/04/2024",
-    "Description": "Transfer to savings account",
-    "Amount": "5000.00",
-    "Balance": "15000.00",
+    "Description": "NEFT Transfer - ABC Ltd",
+    "Amount": "50000.00",
+    "Balance": "150000.00",
     "Bank": "AXIS"
   },
-  ...
+  {
+    "Date": "02/04/2024",
+    "Description": "UPI Payment",
+    "Debit": "500.00",
+    "Credit": "0.00",
+    "Balance": "149500.00",
+    "Bank": "YESBANK"
+  }
 ]
 ```
 
-Fields vary by bank. Check specific parser documentation for full schema.
+**Note**: Field names vary by bank. Common fields include `Date`, `Description`, `Amount`/`Debit`/`Credit`, `Balance`, and `Bank`.
 
-## Legacy Scripts
+## 📁 Project Structure
 
-Old parser scripts are available in the `archive/` folder for reference:
-- `parse_one.py`, `parse_one_enhanced.py`, `parse_one_standard.py`: Single-file parsers
-- `parse_remaining_*.py`: Batch recovery scripts
-- `sample_enhanced.py`: Enhanced bank detector and parsers
+```
+multi_bank_extraction_parser/
+├── main_parser.py              # Main parser (all logic consolidated)
+├── requirements.txt            # Python dependencies
+├── README.md                   # This file
+├── .gitignore                  # Git ignore rules
+├── archive/                    # Legacy parser scripts (reference)
+│   └── *.py                    # Individual bank parsers (archived)
+└── .venv/                      # Virtual environment (git-ignored)
+```
 
-To restore any legacy scripts, copy them back from `archive/` to the root.
+## 🛠️ How It Works
 
-## Dependencies
+1. **Bank Detection**: Analyzes first page of PDF for bank-specific keywords
+2. **Parser Selection**: Chooses appropriate parsing strategy based on detected bank
+3. **Transaction Extraction**:
+   - **Table-based**: Extracts structured tables (Axis, YesBank, Kotak)
+   - **Regex-based**: Uses pattern matching for text-based PDFs (J&K Bank)
+   - **Coordinate-based**: Maps column positions from PDF layout (HDFC)
+4. **Fallback Strategy**: Tries alternative parser if primary method fails
+5. **JSON Export**: Writes clean transaction data to output file
 
-- **pdfplumber**: PDF text and table extraction
+## 🐛 Troubleshooting
 
-See `requirements.txt` for the full dependency list.
+### Parser Returns 0 Transactions
 
-## Troubleshooting
-
-### Parser returns 0 transactions
-
-1. Ensure PDF is readable: check file path and format.
-2. Try specifying a parser mode: `--mode standard`
-3. Verify the bank is supported (see Features section).
-4. Check stderr output for parsing errors.
-
-### Module not found errors
-
-Ensure virtual environment is activated and dependencies are installed:
+**Solution 1: Try Standard Parser**
 ```bash
+python main_parser.py "statement.pdf" "output.json" --mode standard
+```
+
+**Solution 2: Check PDF Format**
+- Ensure PDF is text-based (not scanned image)
+- Try opening PDF with a text reader to verify content
+
+**Solution 3: Specify Bank Mode**
+```bash
+python main_parser.py "statement.pdf" "output.json" --mode AXIS
+```
+
+### Module Not Found Error
+
+```bash
+# Verify virtual environment is activated
+.venv\Scripts\activate  # Windows
+
+# Reinstall dependencies
 pip install -r requirements.txt
 ```
 
-## License
+## 📝 Example Usage
 
-[Add your license here]
+### Single PDF Parsing
+```bash
+python main_parser.py "axis_statement_jan2024.pdf" "output/axis_jan.json"
+```
 
-## Contributing
+### Batch Processing
+```bash
+for file in pdfs/*.pdf; do
+  python main_parser.py "$file" "outputs/$(basename "$file" .pdf).json"
+done
+```
 
-[Add contribution guidelines here]
+## 📚 Technical Details
+
+### Parser Strategies
+
+- **pdfplumber Table Extraction**: Uses text-flow algorithms for structured data
+- **Regex Patterns**: Matches transaction keywords and amount formats
+- **Coordinate-Based**: Maps word positions to identify column boundaries
+- **Multi-line Handling**: Captures descriptions spanning multiple lines
+
+### Bank Detection Priority
+1. Kotak (checks "Cust. Reln. No.")
+2. J&K Bank (checks "Jammu" + "Kashmir")
+3. Axis Bank (checks "AXIS BANK")
+4. YesBank (checks "YES BANK")
+5. HDFC (checks "HDFC BANK")
+6. Standard/SBI (fallback)
+
+## 🤝 Contributing
+
+Contributions welcome! To add support for a new bank:
+
+1. Add detection keyword in `detect_bank()`
+2. Implement `parse_<bank>_statement()` function
+3. Test with sample PDF
+4. Submit pull request
+
+## 📄 License
+
+[Specify your license - MIT, Apache 2.0, etc.]
+
+## 👤 Author
+
+Jils22
+
+## 🙏 Acknowledgments
+
+- Built with [pdfplumber](https://github.com/jsvine/pdfplumber)
+- Supports multiple Indian banks
