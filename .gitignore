@@ -1,0 +1,13 @@
+__pycache__/
+.venv/
+*.pyc
+*.log
+outputs/
+unparsed_pdfs/
+unparsed_pdfs_enhanced/
+unparsed_pdfs_retry/
+unparsed_recovery_final/
+parsable_pdfs/
+unparsed_pdfs/
+wcopfile/
+archive/
