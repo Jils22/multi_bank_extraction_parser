@@ -5,11 +5,13 @@ A robust Python parser for extracting transactions from bank statement PDFs with
 ## 🎯 Features
 
 - **🏦 Multi-bank Support**: Detects and parses statements from 6+ banks automatically
-- **🔍 Smart Detection**: Analyzes PDF content to identify bank type
-- **📊 Multiple Strategies**: Combines table extraction, regex, and text-based parsing
-- **📁 Fallback Parsing**: Gracefully handles edge cases with fallback parsers
+- **🔍 Smart Detection**: Analyzes PDF content to identify bank type with priority-based logic
+- **📊 Multiple Strategies**: Combines table extraction, regex, and coordinate-based parsing
+- **📁 Fallback Parsing**: Gracefully handles edge cases with automatic fallback to alternative parsers
 - **📋 Clean JSON Output**: Structured transaction data ready for integration
-- **⚙️ CLI Interface**: Simple command-line usage with optional mode override
+- **⚙️ Enhanced CLI**: Command-line interface with optional mode override and verbose logging
+- **📝 Comprehensive Logging**: Detailed logging for debugging and monitoring parser operations
+- **🛡️ Robust Error Handling**: Detailed error messages and graceful failure handling
 
 ## 🏦 Supported Banks
 
@@ -61,6 +63,12 @@ python main_parser.py "path/to/statement.pdf" "output/transactions.json"
 ```bash
 python main_parser.py "statement.pdf" "output.json" --mode AXIS
 python main_parser.py "statement.pdf" "output.json" --mode KOTAK
+```
+
+### Enable Verbose Logging
+
+```bash
+python main_parser.py "statement.pdf" "output.json" --verbose
 ```
 
 ### Available Modes
@@ -169,20 +177,58 @@ done
 
 ## 📚 Technical Details
 
+### Architecture
+
+The parser follows a modular architecture:
+
+```
+detect_bank()
+    ↓
+[Bank-specific Parser]
+    ├─ parse_axis_statement()
+    ├─ parse_yesbank_statement()
+    ├─ parse_hdfc_statement()
+    ├─ parse_kotak_statement()
+    ├─ parse_with_regex_jk()
+    └─ parse_with_simple_table()
+    ↓
+JSON Export
+```
+
 ### Parser Strategies
 
 - **pdfplumber Table Extraction**: Uses text-flow algorithms for structured data
-- **Regex Patterns**: Matches transaction keywords and amount formats
-- **Coordinate-Based**: Maps word positions to identify column boundaries
+- **Regex Patterns**: Matches transaction keywords and amount formats  
+- **Coordinate-Based Layout**: Maps word positions to identify column boundaries (HDFC)
 - **Multi-line Handling**: Captures descriptions spanning multiple lines
+- **Merged Column Repair**: Handles special cases like merged serial number + date (Kotak)
+
+### Logging & Debugging
+
+The parser includes comprehensive logging at INFO and DEBUG levels:
+
+```bash
+# Standard output with INFO level logs
+python main_parser.py statement.pdf output.json
+
+# Detailed DEBUG level logs for troubleshooting
+python main_parser.py statement.pdf output.json --verbose
+```
+
+Log messages include:
+- Bank detection results
+- Parser selection and operation
+- Page processing details
+- Transaction extraction counts
+- Error traces with full context
 
 ### Bank Detection Priority
-1. Kotak (checks "Cust. Reln. No.")
-2. J&K Bank (checks "Jammu" + "Kashmir")
-3. Axis Bank (checks "AXIS BANK")
-4. YesBank (checks "YES BANK")
-5. HDFC (checks "HDFC BANK")
-6. Standard/SBI (fallback)
+1. **Kotak** - checks "Cust. Reln. No." (most specific)
+2. **J&K Bank** - checks "Jammu" + "Kashmir"
+3. **HDFC** - checks "HDFC Bank" or "proc-dl-statement"
+4. **Axis Bank** - checks "AXIS BANK"
+5. **YesBank** - checks "YES BANK"
+6. **Standard/SBI** - fallback parser (least specific)
 
 ## 🤝 Contributing
 
